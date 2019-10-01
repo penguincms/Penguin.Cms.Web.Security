@@ -29,5 +29,15 @@
             True if the user has validated this token by clicking the link in their email
             </summary>
         </member>
+        <member name="T:Penguin.Cms.Web.Security.Interfaces.ISecurityToken">
+            <summary>
+            Represents a security validation attempt
+            </summary>
+        </member>
+        <member name="P:Penguin.Cms.Web.Security.Interfaces.ISecurityToken.IsValid">
+            <summary>
+            If true, access should be allowed
+            </summary>
+        </member>
     </members>
 </doc>
