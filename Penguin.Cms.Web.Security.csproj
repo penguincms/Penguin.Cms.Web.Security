@@ -7,6 +7,7 @@
     <Description>None Available</Description>
     <AssemblyName>Penguin.Cms.Web.Security</AssemblyName>
     <RootNamespace>Penguin.Cms.Web.Security</RootNamespace>
+    <DocumentationFile>Penguin.Cms.Web.Security.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="3.1.1" />
