@@ -16,7 +16,10 @@ namespace Penguin.Cms.Web.Security
     [Serializable]
     public class UserSession : IUserSession, IMessageHandler<Updated<User>>
     {
-        public bool AllowNSFW { get { return this.Session?.Get<bool>("AllowNsfw") ?? false; } set { this.Session?.Set("AllowNsfw", value); } }
+        private static readonly ConcurrentDictionary<int, string> UserCache = new ConcurrentDictionary<int, string>();
+        private readonly ISession Session;
+        private string CachedSessionUser;
+        public bool AllowNSFW { get => this.Session?.Get<bool>("AllowNsfw") ?? false; set => this.Session?.Set("AllowNsfw", value); }
 
         public bool IsLocalConnection { get; set; }
         public bool IsLoggedIn => this.Session != null && this.Session.Get<int>("LoggedInUserId") != 0;
@@ -26,15 +29,15 @@ namespace Penguin.Cms.Web.Security
         {
             get
             {
-                User toReturn = JsonConvert.DeserializeObject<User>(CachedSessionUser ?? "") ?? Users.Guest;
+                User toReturn = JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "") ?? Users.Guest;
 
                 int SessionUserId = this.Session.Get<int>("LoggedInUserId");
 
                 if (toReturn._Id == 0 && SessionUserId != 0)
                 {
-                    CachedSessionUser = UserCache[SessionUserId];
+                    this.CachedSessionUser = UserCache[SessionUserId];
 
-                    toReturn = JsonConvert.DeserializeObject<User>(CachedSessionUser);
+                    toReturn = JsonConvert.DeserializeObject<User>(this.CachedSessionUser);
 
                     if (toReturn._Id == 0)
                     {
@@ -64,19 +67,9 @@ namespace Penguin.Cms.Web.Security
 
         IUser IUserSession.LoggedInUser => this.LoggedInUser;
 
-        private static readonly ConcurrentDictionary<int, string> UserCache = new ConcurrentDictionary<int, string>();
-
-        private readonly string RemoteIp;
-
-        private readonly ISession Session;
-
-        private string CachedSessionUser;
-
-        public UserSession(ISession session, HttpContext httpContext)
+        public UserSession(ISession session)
         {
             this.Session = session;
-            this.RemoteIp = httpContext?.Connection.RemoteIpAddress?.ToString();
-            //this.IsLocalConnection = httpContext?.Request.IsLocal() ?? true;
         }
 
         public static void UpdateUser(Updated<User> target)
@@ -92,7 +85,10 @@ namespace Penguin.Cms.Web.Security
             }
         }
 
-        public void AcceptMessage(Updated<User> target) => UpdateUser(target);
+        public void AcceptMessage(Updated<User> target)
+        {
+            UpdateUser(target);
+        }
 
         protected void LogIn(User u)
         {
@@ -109,7 +105,7 @@ namespace Penguin.Cms.Web.Security
 
         protected void LogOut()
         {
-            UserCache.TryRemove(JsonConvert.DeserializeObject<User>(CachedSessionUser ?? "")?._Id ?? 0, out string _);
+            UserCache.TryRemove(JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "")?._Id ?? 0, out string _);
             this.CachedSessionUser = null;
             this.Session.Set("LoggedInUserId", 0);
         }
