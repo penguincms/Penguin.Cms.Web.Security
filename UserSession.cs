@@ -24,7 +24,6 @@ namespace Penguin.Cms.Web.Security
         public bool IsLocalConnection { get; set; }
         public bool IsLoggedIn => this.Session != null && this.Session.Get<int>("LoggedInUserId") != 0;
 
-        [SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters")]
         public User LoggedInUser
         {
             get
