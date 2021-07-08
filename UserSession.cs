@@ -9,7 +9,6 @@ using Penguin.Security.Abstractions.Interfaces;
 using Penguin.Web.Extensions;
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Penguin.Cms.Web.Security
 {
