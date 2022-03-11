@@ -27,7 +27,7 @@ namespace Penguin.Cms.Web.Security
         {
             get
             {
-                User toReturn = JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "") ?? Users.Guest;
+                User toReturn = JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "", UserSerializationSettings) ?? Users.Guest;
 
                 int SessionUserId = this.Session.Get<int>("LoggedInUserId");
 
@@ -35,7 +35,7 @@ namespace Penguin.Cms.Web.Security
                 {
                     this.CachedSessionUser = UserCache[SessionUserId];
 
-                    toReturn = JsonConvert.DeserializeObject<User>(this.CachedSessionUser);
+                    toReturn = JsonConvert.DeserializeObject<User>(this.CachedSessionUser, UserSerializationSettings);
 
                     if (toReturn._Id == 0)
                     {
@@ -79,7 +79,7 @@ namespace Penguin.Cms.Web.Security
 
             if (UserCache.ContainsKey(target.Target._Id))
             {
-                UserCache[target.Target._Id] = JsonConvert.SerializeObject(target.Target, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+                UserCache[target.Target._Id] = Serialize(target.Target);
             }
         }
 
@@ -88,6 +88,18 @@ namespace Penguin.Cms.Web.Security
             UpdateUser(target);
         }
 
+        private static JsonSerializerSettings UserSerializationSettings => new JsonSerializerSettings()
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects
+        };
+
+        private static string Serialize(User u)
+        {
+            return JsonConvert.SerializeObject(u, UserSerializationSettings);
+        }
         protected void LogIn(User u)
         {
             if (u is null)
@@ -95,7 +107,7 @@ namespace Penguin.Cms.Web.Security
                 throw new ArgumentNullException(nameof(u));
             }
 
-            string SerializedUser = JsonConvert.SerializeObject(u, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            string SerializedUser = Serialize(u);
             this.CachedSessionUser = SerializedUser;
             UserCache.AddOrUpdate(u._Id, SerializedUser);
             this.Session.Set("LoggedInUserId", u._Id);
@@ -103,7 +115,7 @@ namespace Penguin.Cms.Web.Security
 
         protected void LogOut()
         {
-            UserCache.TryRemove(JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "")?._Id ?? 0, out string _);
+            UserCache.TryRemove(JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "", UserSerializationSettings)?._Id ?? 0, out string _);
             this.CachedSessionUser = null;
             this.Session.Set("LoggedInUserId", 0);
         }
