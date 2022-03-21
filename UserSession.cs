@@ -83,10 +83,7 @@ namespace Penguin.Cms.Web.Security
             }
         }
 
-        public void AcceptMessage(Updated<User> target)
-        {
-            UpdateUser(target);
-        }
+        public void AcceptMessage(Updated<User> target) => UpdateUser(target);
 
         private static JsonSerializerSettings UserSerializationSettings => new JsonSerializerSettings()
         {
