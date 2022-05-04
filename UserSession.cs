@@ -83,7 +83,10 @@ namespace Penguin.Cms.Web.Security
             }
         }
 
-        public void AcceptMessage(Updated<User> target) => UpdateUser(target);
+        public void AcceptMessage(Updated<User> target)
+        {
+            UpdateUser(target);
+        }
 
         private static JsonSerializerSettings UserSerializationSettings => new JsonSerializerSettings()
         {
@@ -106,13 +109,13 @@ namespace Penguin.Cms.Web.Security
 
             string SerializedUser = Serialize(u);
             this.CachedSessionUser = SerializedUser;
-            UserCache.AddOrUpdate(u._Id, SerializedUser);
+            _ = UserCache.AddOrUpdate(u._Id, SerializedUser);
             this.Session.Set("LoggedInUserId", u._Id);
         }
 
         protected void LogOut()
         {
-            UserCache.TryRemove(JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "", UserSerializationSettings)?._Id ?? 0, out string _);
+            _ = UserCache.TryRemove(JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "", UserSerializationSettings)?._Id ?? 0, out _);
             this.CachedSessionUser = null;
             this.Session.Set("LoggedInUserId", 0);
         }
