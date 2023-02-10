@@ -15,27 +15,27 @@ namespace Penguin.Cms.Web.Security
     [Serializable]
     public class UserSession : IUserSession, IMessageHandler<Updated<User>>
     {
-        private static readonly ConcurrentDictionary<int, string> UserCache = new ConcurrentDictionary<int, string>();
+        private static readonly ConcurrentDictionary<int, string> UserCache = new();
         private readonly ISession Session;
         private string CachedSessionUser;
-        public bool AllowNSFW { get => this.Session?.Get<bool>("AllowNsfw") ?? false; set => this.Session?.Set("AllowNsfw", value); }
+        public bool AllowNSFW { get => Session?.Get<bool>("AllowNsfw") ?? false; set => Session?.Set("AllowNsfw", value); }
 
         public bool IsLocalConnection { get; set; }
-        public bool IsLoggedIn => this.Session != null && this.Session.Get<int>("LoggedInUserId") != 0;
+        public bool IsLoggedIn => Session != null && Session.Get<int>("LoggedInUserId") != 0;
 
         public User LoggedInUser
         {
             get
             {
-                User toReturn = JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "", UserSerializationSettings) ?? Users.Guest;
+                User toReturn = JsonConvert.DeserializeObject<User>(CachedSessionUser ?? "", UserSerializationSettings) ?? Users.Guest;
 
-                int SessionUserId = this.Session.Get<int>("LoggedInUserId");
+                int SessionUserId = Session.Get<int>("LoggedInUserId");
 
                 if (toReturn._Id == 0 && SessionUserId != 0)
                 {
-                    this.CachedSessionUser = UserCache[SessionUserId];
+                    CachedSessionUser = UserCache[SessionUserId];
 
-                    toReturn = JsonConvert.DeserializeObject<User>(this.CachedSessionUser, UserSerializationSettings);
+                    toReturn = JsonConvert.DeserializeObject<User>(CachedSessionUser, UserSerializationSettings);
 
                     if (toReturn._Id == 0)
                     {
@@ -54,20 +54,20 @@ namespace Penguin.Cms.Web.Security
                 }
                 if (value._Id != 0)
                 {
-                    this.LogIn(value);
+                    LogIn(value);
                 }
                 else
                 {
-                    this.LogOut();
+                    LogOut();
                 }
             }
         }
 
-        IUser IUserSession.LoggedInUser => this.LoggedInUser;
+        IUser IUserSession.LoggedInUser => LoggedInUser;
 
         public UserSession(ISession session)
         {
-            this.Session = session;
+            Session = session;
         }
 
         public static void UpdateUser(Updated<User> target)
@@ -83,12 +83,12 @@ namespace Penguin.Cms.Web.Security
             }
         }
 
-        public void AcceptMessage(Updated<User> target)
+        public void AcceptMessage(Updated<User> message)
         {
-            UpdateUser(target);
+            UpdateUser(message);
         }
 
-        private static JsonSerializerSettings UserSerializationSettings => new JsonSerializerSettings()
+        private static JsonSerializerSettings UserSerializationSettings => new()
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore,
@@ -100,6 +100,7 @@ namespace Penguin.Cms.Web.Security
         {
             return JsonConvert.SerializeObject(u, UserSerializationSettings);
         }
+
         protected void LogIn(User u)
         {
             if (u is null)
@@ -108,16 +109,16 @@ namespace Penguin.Cms.Web.Security
             }
 
             string SerializedUser = Serialize(u);
-            this.CachedSessionUser = SerializedUser;
+            CachedSessionUser = SerializedUser;
             _ = UserCache.AddOrUpdate(u._Id, SerializedUser);
-            this.Session.Set("LoggedInUserId", u._Id);
+            Session.Set("LoggedInUserId", u._Id);
         }
 
         protected void LogOut()
         {
-            _ = UserCache.TryRemove(JsonConvert.DeserializeObject<User>(this.CachedSessionUser ?? "", UserSerializationSettings)?._Id ?? 0, out _);
-            this.CachedSessionUser = null;
-            this.Session.Set("LoggedInUserId", 0);
+            _ = UserCache.TryRemove(JsonConvert.DeserializeObject<User>(CachedSessionUser ?? "", UserSerializationSettings)?._Id ?? 0, out _);
+            CachedSessionUser = null;
+            Session.Set("LoggedInUserId", 0);
         }
     }
 }
