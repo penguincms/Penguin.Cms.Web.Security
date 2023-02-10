@@ -18,9 +18,11 @@ namespace Penguin.Cms.Web.Security
         private static readonly ConcurrentDictionary<int, string> UserCache = new();
         private readonly ISession Session;
         private string CachedSessionUser;
+
         public bool AllowNSFW { get => Session?.Get<bool>("AllowNsfw") ?? false; set => Session?.Set("AllowNsfw", value); }
 
         public bool IsLocalConnection { get; set; }
+
         public bool IsLoggedIn => Session != null && Session.Get<int>("LoggedInUserId") != 0;
 
         public User LoggedInUser
