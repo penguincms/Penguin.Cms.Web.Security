@@ -13,9 +13,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Penguin.Messaging.Persistence" Version="5.2.0" />
-    <PackageReference Include="Penguin.Web.Extensions" Version="5.2.0" />
-    <PackageReference Include="Penguin.Extensions.Collections" Version="5.2.0" />
-    <PackageReference Include="Penguin.Cms.Security" Version="5.2.0" />
+    <PackageReference Include="Penguin.Messaging.Persistence" Version="5.4.0" />
+    <PackageReference Include="Penguin.Web.Extensions" Version="5.4.0" />
+    <PackageReference Include="Penguin.Extensions.Collections" Version="5.4.0" />
+    <PackageReference Include="Penguin.Cms.Security" Version="5.4.0" />
   </ItemGroup>
 </Project>
